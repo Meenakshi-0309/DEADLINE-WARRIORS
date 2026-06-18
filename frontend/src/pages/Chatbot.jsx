@@ -18,7 +18,7 @@ function Chatbot({ setBot }) {
     try {
 
       const res = await axios.get(
-        "http://localhost:5000/api/chat-history",
+        "https://deadline-warriors-1.onrender.com/api/chat-history",
         {
           headers:{
             Authorization:
@@ -67,7 +67,7 @@ function Chatbot({ setBot }) {
 
       await axios.post(
 
-        "http://localhost:5000/api/chat-history",
+        "https://deadline-warriors-1.onrender.com/api/chat-history",
 
         {
           message:{

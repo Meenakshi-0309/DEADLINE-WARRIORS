@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { z } from "zod";
 import API from "../services/api"; // 👈 IMPORTANT (your axios instance)
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = "https://deadline-warriors-1.onrender.com";
 
 /* VALIDATION */
 let userSchema = z

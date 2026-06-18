@@ -20,7 +20,7 @@ function Analytics() {
     const fetchAnalyticsData = async () => {
       try {
         const [tasksRes, historyRes] = await Promise.all([
-          fetch("http://localhost:5000/api/tasks", {
+          fetch("https://deadline-warriors-1.onrender.com/api/tasks", {
             method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -28,7 +28,7 @@ function Analytics() {
             },
           }),
 
-          fetch("http://localhost:5000/api/history", {
+          fetch("https://deadline-warriors-1.onrender.com/api/history", {
             method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
