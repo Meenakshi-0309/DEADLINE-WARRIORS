@@ -14,3 +14,7 @@ export const deleteTask = (id) =>
 
 export const completeTask = (id) =>
   API.put(`/tasks/complete/${id}`);
+
+// ADD THIS
+export const getAnalytics = () =>
+  API.get("/analytics");

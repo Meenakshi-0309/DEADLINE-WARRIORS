@@ -1,8 +1,6 @@
 const Task = require("../models/Task");
 const TaskHistory = require("../models/TaskHistory");
-
-const calculatePriority =
-require("../services/priorityService");
+const calculatePriority = require("../services/priorityService");
 
 exports.createTask = async (req, res) => {
 
@@ -43,6 +41,32 @@ exports.getTasks = async (req, res) => {
 
     const status =
       req.query.status || "";
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Find expired tasks
+    const expiredTasks = await Task.find({
+      user: req.user,
+      deadline: { $lt: today }
+    });
+
+    // Move expired tasks to history
+    for (const task of expiredTasks) {
+
+      await TaskHistory.create({
+
+        user: task.user,
+        title: task.title,
+        description: task.description,
+        deadline: task.deadline,
+        priority: task.priority,
+        status: "Expired"
+
+      });
+
+      await Task.findByIdAndDelete(task._id);
+    }
 
     let query = {
       user: req.user
@@ -181,6 +205,7 @@ exports.completeTask = async (req, res) => {
       title: task.title,
       description: task.description,
       deadline: task.deadline,
+      priority: task.priority,
       status: "Completed"
 
     });

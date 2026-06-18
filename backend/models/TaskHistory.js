@@ -28,8 +28,14 @@ const taskHistorySchema = new mongoose.Schema(
       default: "Medium"
     },
 
-    status: {
+      status: {
       type: String,
+      enum: [
+        "Completed",
+        "Expired",
+        "Verified Completed",
+        "Overdue"
+      ],
       default: "Completed"
     },
 

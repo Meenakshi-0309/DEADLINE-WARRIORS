@@ -2,24 +2,37 @@ const express = require("express");
 const router = express.Router();
 
 const protect = require("../middleware/authMiddleware");
-const TaskHistory = require("../models/TaskHistory");
 
-router.get("/", protect, async (req, res) => {
-  try {
+const {
+  getTaskHistory,
+  verifyTask,
+  deleteHistoryTask
+} = require("../controllers/taskHistoryController");
 
-    const history = await TaskHistory.find({
-      user: req.user
-    }).sort({ completedAt: -1 });
 
-    res.json(history);
 
-  } catch (error) {
+router.get(
+  "/",
+  protect,
+  getTaskHistory
+);
 
-    res.status(500).json({
-      message: error.message
-    });
 
-  }
-});
+
+router.put(
+  "/verify/:id",
+  protect,
+  verifyTask
+);
+
+
+
+router.delete(
+  "/delete/:id",
+  protect,
+  deleteHistoryTask
+);
+
+
 
 module.exports = router;

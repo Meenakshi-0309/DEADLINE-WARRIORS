@@ -1,24 +1,98 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+
 import logo from "../assets/logo.png";
-import { getTasks } from "../services/taskService";
+
+import AnalyticsCards from "../components/AnalyticCards";
+import AnalyticsDonutChart from "../components/AnalyticsDonutChart";
+import QuickInsights from "../components/QuickInsights";
+import TaskSummaryTable from "../components/TaskSummaryTable";
+
+import "../styles/Analytics.css";
 import "../styles/MainHome.css";
 
 function Analytics() {
   const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
-    loadTasks();
+    const token = localStorage.getItem("token");
+
+    const fetchAnalyticsData = async () => {
+      try {
+        const [tasksRes, historyRes] = await Promise.all([
+          fetch("http://localhost:5000/api/tasks", {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }),
+
+          fetch("http://localhost:5000/api/history", {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }),
+        ]);
+
+        const tasksData = await tasksRes.json();
+        const historyData = await historyRes.json();
+
+        if (!tasksRes.ok) {
+          throw new Error(
+            tasksData.message || "Failed to fetch tasks"
+          );
+        }
+
+        if (!historyRes.ok) {
+          throw new Error(
+            historyData.message || "Failed to fetch task history"
+          );
+        }
+
+        // Combine active tasks and completed task history
+        const allTasks = [...tasksData, ...historyData];
+
+        setTasks(allTasks);
+
+        console.log("Tasks:", tasksData);
+        console.log("History:", historyData);
+        console.log("Combined:", allTasks);
+      } catch (err) {
+        console.error("Analytics Error:", err);
+      }
+    };
+
+    fetchAnalyticsData();
   }, []);
 
-  const loadTasks = async () => {
-    try {
-      const res = await getTasks();
-      setTasks(res.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const totalTasks = tasks.length;
+
+  const completed = tasks.filter(
+    (task) => task.status === "Completed"
+  ).length;
+
+  const pending = tasks.filter(
+    (task) => task.status === "Pending"
+  ).length;
+
+  const overdue = tasks.filter(
+  (task) =>
+    task.status === "Expired" ||
+    task.status === "Overdue" ||
+    task.status === "Verified Not Completed"
+).length;
+
+  const highPriority = tasks.filter(
+    (task) => task.priority === "High"
+  ).length;
+
+  const completionRate =
+    totalTasks === 0
+      ? 0
+      : Math.round((completed / totalTasks) * 100);
 
   return (
     <div className="dashboard">
@@ -39,28 +113,41 @@ function Analytics() {
 
       {/* Main Content */}
       <main className="content">
-        <div className="dashboard-cards">
 
-          <div className="card">
-            <h3>Total Tasks</h3>
-            <h2>{tasks.length}</h2>
+        <div className="analytics-page">
+
+          <h1 className="analytics-title">
+            📊 Analytics Dashboard
+          </h1>
+
+          <AnalyticsCards
+            totalTasks={totalTasks}
+            completed={completed}
+            pending={pending}
+            overdue={overdue}
+          />
+
+          <div className="middle-section">
+
+            <AnalyticsDonutChart
+              completed={completed}
+              pending={pending}
+              overdue={overdue}
+            />
+
+            <QuickInsights
+              completionRate={completionRate}
+              pending={pending}
+              overdue={overdue}
+              highPriority={highPriority}
+            />
+
           </div>
 
-          <div className="card">
-            <h3>Completed</h3>
-            <h2>
-              {tasks.filter(task => task.status === "Completed").length}
-            </h2>
-          </div>
-
-          <div className="card">
-            <h3>Pending</h3>
-            <h2>
-              {tasks.filter(task => task.status !== "Completed").length}
-            </h2>
-          </div>
+          <TaskSummaryTable tasks={tasks} />
 
         </div>
+
       </main>
 
     </div>

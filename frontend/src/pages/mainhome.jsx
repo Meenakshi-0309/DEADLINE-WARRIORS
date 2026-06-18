@@ -5,15 +5,14 @@ import logo from "../assets/logo.png";
 import Chatbot from "../pages/Chatbot";
 import TaskCard from "../components/TaskCard";
 
-import {
-  getTasks,
-  createTask
-} from "../services/taskService";
+import {getTasks, createTask, updateTask} from "../services/taskService";
 
-function MainHome({ setSearch }) {
+function MainHome() {
   const [tasks, setTasks] = useState([]);
+  const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [bot, setBot] = useState(false);
+  const [editTask, setEditTask] = useState(null);
 
   const [taskData, setTaskData] = useState({
     title: "",
@@ -41,29 +40,58 @@ function MainHome({ setSearch }) {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleEdit = (task) => {
+    setEditTask(task._id);
 
-    try {
+  setTaskData({
+    title: task.title,
+    description: task.description,
+    deadline: task.deadline
+      ? new Date(task.deadline).toISOString().split('T')[0]
+      : ""
+  });
+
+  setShowForm(true);
+};
+
+  const closeForm = () => {
+    setShowForm(false);
+    setEditTask(null);
+    setTaskData({ title: "", description: "", deadline: "" });
+  };
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    if (editTask) {
+      await updateTask(editTask, {
+        title: taskData.title,
+        description: taskData.description,
+        deadline: taskData.deadline
+      });
+    } else {
       await createTask({
         title: taskData.title,
         description: taskData.description,
         deadline: taskData.deadline
       });
-
-      await loadTasks();
-
-      setTaskData({
-        title: "",
-        description: "",
-        deadline: ""
-      });
-
-      setShowForm(false);
-    } catch (error) {
-      console.log(error);
     }
-  };
+    await loadTasks();
+    closeForm();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const filteredTasks = tasks.filter((task) => {
+  const searchText = search.toLowerCase();
+
+  return (
+    task.title?.toLowerCase().includes(searchText) ||
+    task.description?.toLowerCase().includes(searchText)
+  );
+});
 
   return (
     <div className="dashboard">
@@ -89,26 +117,26 @@ function MainHome({ setSearch }) {
           <input
             className="search-bar"
             placeholder="🔍 Search tasks..."
-            onChange={(e) =>
-              setSearch && setSearch(e.target.value)
-            }
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
         {/* Task List */}
         <div className="task-grid">
 
-          {tasks.length === 0 ? (
+          {filteredTasks.length === 0 ? (
             <div className="empty-state">
               <h2>No Tasks Found</h2>
               <p>Create your first task using +</p>
             </div>
           ) : (
-            tasks.map((task) => (
+            filteredTasks.map((task) => (
               <TaskCard
                 key={task._id}
                 task={task}
                 refresh={loadTasks}
+                onEdit={handleEdit}
               />
             ))
           )}
@@ -136,7 +164,9 @@ function MainHome({ setSearch }) {
       {showForm && (
         <div className="modal">
           <form className="task-form" onSubmit={handleSubmit}>
-            <h2>Create Task</h2>
+            <h2>
+              {editTask ? "Edit Task" : "Create Task"}
+            </h2>
 
             <input
               name="title"
@@ -161,17 +191,45 @@ function MainHome({ setSearch }) {
               required
             />
 
-            <button className="save-btn" type="submit">
-              Save Task
-            </button>
-
             <button
-              type="button"
-              className="cancel-btn"
-              onClick={() => setShowForm(false)}
-            >
-              Cancel
-            </button>
+  className="save-btn"
+  type="submit"
+  style={{
+    backgroundColor: "#2563eb",
+    color: "white",
+    padding: "12px 25px",
+    border: "none",
+    borderRadius: "10px",
+    fontSize: "16px",
+    fontWeight: "600",
+    cursor: "pointer",
+    marginTop: "10px",
+    boxShadow: "0 5px 15px rgba(37,99,235,0.3)"
+  }}
+>
+  {editTask ? "Update Task" : "Save Task"}
+</button>
+
+
+<button
+  type="button"
+  className="cancel-btn"
+  onClick={() => setShowForm(false)}
+  style={{
+    backgroundColor: "#2563eb",
+    color: "white",
+    padding: "12px 25px",
+    border: "none",
+    borderRadius: "10px",
+    fontSize: "16px",
+    fontWeight: "600",
+    cursor: "pointer",
+    marginTop: "10px",
+    boxShadow: "0 5px 15px rgba(37,99,235,0.3)"
+  }}
+>
+  Cancel
+</button>
           </form>
         </div>
       )}
