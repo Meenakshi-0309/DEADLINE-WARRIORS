@@ -4,7 +4,7 @@ import MainHome from "./pages/mainhome";
 import Analytics from "./pages/Analytics";
 import Chatbot from "./pages/Chatbot";
 import Home from "./pages/Home";
-import Signup from "./pages/Signup";
+import Signup from "./pages/SignUp";
 import Login from "./pages/Login";
 import About from "./pages/About";
 import TaskHistory from "./pages/TaskHistory";
