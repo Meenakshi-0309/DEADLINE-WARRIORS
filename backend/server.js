@@ -27,10 +27,15 @@ const app = express();
 
 
 // Middleware
+const cors = require("cors");
+
 app.use(
   cors({
-    origin:"http://localhost:5173",
-    credentials:true
+    origin: [
+      "http://localhost:5173",
+      "https://deadline-warriors-cph7.vercel.app"
+    ],
+    credentials: true,
   })
 );
 
